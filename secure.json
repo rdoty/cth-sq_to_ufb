@@ -1,0 +1,11 @@
+{
+    "square": {
+        "application_id": "",
+        "access_token": ""
+    },
+    "ufb": {
+        "access_email": "",
+        "access_token_ro": "",
+        "access_token_rw": ""
+    }
+}
