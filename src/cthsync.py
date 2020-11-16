@@ -38,7 +38,7 @@ class CTHSync:
 
     def list_square_locations(self) -> dict:
         """
-        Get all locations defined for this Square account, 'body' is the list of locations
+        Get locations defined for this Square account, 'body' is the list of locations
         :return:
         """
         result = self.square_client.locations.list_locations()
@@ -54,8 +54,17 @@ class CTHSync:
         self.ufb = requests.get(self.ufb_api + "locations")
         return self.ufb.json() if self.ufb.status_code == 200 else self.ufb.status_code
 
-    def list_ufb_containers(self):
-        self.ufb = requests.get(self.ufb_api + "containers/1")
-        return self.ufb.json() if self.ufb.status_code == 200 else self.ufb.status_code
+    def list_ufb_items(self):
+        """
+        locations->menus->sections->items->containers
+        :return:
+        """
+        pass
 
-
+    def track_ufb_event(self):
+        """
+        https://docs.business.untappd.com/#events
+        GET locations/:location_id/analytics
+        :return:
+        """
+        pass
