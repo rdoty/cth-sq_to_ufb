@@ -2,7 +2,29 @@ import requests
 
 from base64 import b64encode
 from settings import *
-from square.client import Client as square_client
+from square.client import Client as SquareClient
+
+
+"""
+    Untapped for Business API documentation
+    https://docs.business.untappd.com/, https://docs.business.untappd.com/#errors
+    API Structure:
+    ->current_user
+    ->container_sizes
+    ->locations
+        ->social_announcements
+        ->historical_items
+        ->hours
+        ->insights
+        ->events
+        ->custom_menus
+            ->custom_sections
+                ->...
+        ->menus
+            ->sections
+                ->items
+                    ->containers
+"""
 
 
 class CTHSync:
@@ -56,7 +78,7 @@ class CTHSync:
 
     def list_ufb_items(self):
         """
-        locations->menus->sections->items->containers
+        locations->menus->sections->items
         :return:
         """
         pass
