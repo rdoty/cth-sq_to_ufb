@@ -39,18 +39,19 @@ class CTHSync:
         from the project settings.
         """
         # Configure Square settings
-        self.square_client = square_client(
+        self.square_client = SquareClient(
             access_token=secure_settings.get("square", {}).get("access_token"),
             environment="sandbox",
         )
 
         # Configure Untappd For Business settings
         ufb_secure = secure_settings.get("ufb", {})
-        token = f'{ufb_secure.get("access_email")}:{ufb_secure.get("access_token_rw")}'
-        encoded_token = b64encode(token.encode("UTF-8")).decode()
-        ufb_headers = {"Authorization": f"Basic {encoded_token}"}
-        with requests.Session() as self.ufb:
-            self.ufb.headers.update(ufb_headers)
+        # Some problem with the encoding below...FIXME
+        # token = f'{ufb_secure.get("access_email")}:{ufb_secure.get("access_token_rw")}'
+        # encoded_token = b64encode(token.encode("ascii")).decode()
+
+        encoded_token = ufb_secure.get("base64_ro")  # Pre-encoded value
+        self.ufb_headers = {"Authorization": f"Basic {encoded_token}"}
         self.ufb_api = settings.get("ufb", {}).get("api_root")
 
     def list_square_inventory_counts(self) -> dict:
@@ -73,8 +74,8 @@ class CTHSync:
         return result.body if result.is_success() else f"Error: {result.errors}"
 
     def list_ufb_locations(self):
-        self.ufb = requests.get(self.ufb_api + "locations")
-        return self.ufb.json() if self.ufb.status_code == 200 else self.ufb.status_code
+        ufb = requests.get(self.ufb_api + "locations", headers=self.ufb_headers)
+        return ufb.json() if ufb.status_code == 200 else ufb.status_code
 
     def list_ufb_items(self):
         """
