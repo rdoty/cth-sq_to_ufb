@@ -1,6 +1,5 @@
 import requests
 
-from base64 import b64encode
 from settings import *
 from square.client import Client as SquareClient
 
@@ -67,15 +66,68 @@ class CTHSync:
         result = self.square_client.locations.list_locations()
         return result.body if result.is_success() else result.errors
 
-    def update_square_location(self):
-        location = settings.get("square", {}).get("main_loc_id")
-        location_data = settings.get("square", {}).get("location_data")
-        result = self.square_client.locations.update_location(location, location_data)
+    def update_square_location(self, loc_id: str = None, loc_data: dict = None):
+        result = self.square_client.locations.update_location(loc_id, loc_data)
         return result.body if result.is_success() else f"Error: {result.errors}"
 
     def list_ufb_locations(self):
         ufb = requests.get(self.ufb_api + "locations", headers=self.ufb_headers)
         return ufb.json() if ufb.status_code == 200 else ufb.status_code
+
+    def list_ufb_container_sizes(self):
+        ufb = requests.get(self.ufb_api + "container_sizes", headers=self.ufb_headers)
+        return ufb.json() if ufb.status_code == 200 else ufb.status_code
+
+    def update_ufb_location(self, loc_id: int = None, loc_data: dict = None):
+        """
+        id	Integer	true	The id of the location.
+        mailing_address1	String	false	The location mailing street address.
+        mailing_address2	String	false	The location mailing address (PO Box, Apt, Ste, etc.)
+        mailing_city	String	false	The location mailing city
+        mailing_postcode	String	false	The location mailing postcode
+        mailing_region	String	false	The location mailing state/region
+        mailing_country	String	false	The location mailing country
+
+        e.g. { "location": { "mailing_address1": "123 Bourbon St" } }
+        :param loc_id:
+        :param loc_data:
+        :return:
+        """
+        pass
+
+    def update_ufb_location_details(self, loc_id: int = None, loc_data: dict = None):
+        """
+        PUT /locations/:loc_id/details
+        PATCH /locations/:loc_id/details
+
+        Query Parameters
+        Parameter	Validations	Required	Description
+        id	        Integer	    true	    The id of the location.
+        timezone	String	    false	    The location timezone.
+        currency	String	    false	    The location accepted currency
+        description	String	    false	    The location description
+        food_served	String	    false	    The food served at the location
+        growler_filling_station	String	false	Whether the location fills growlers
+        crowler_filling_station	String	false	Whether the location fills crowlers
+        kegs	    String	    false	Whether the location carries kegs
+        nitro_on_tap	String	false	Whether the location has nitro on tap
+        cask_on_tap	String	false	Whether the location has casks on tap
+        serve_wine	String	false	Whether the location serves wine
+        serve_liquor	String	false	Whether the location serves liquor
+        serve_cocktails	String	false	Whether the location serves cocktails
+        categories	String[]	false	The location categories
+        accepted_payment_types	String[]	false	The location accepted payment types
+
+        e.g. { "currency": "USD", "description": "We really like beer here!",
+               "nitro_on_tap": 1, "categories": ["55a59bace4b013909087cb36"] }
+
+        :param loc_id:
+        :param loc_data:
+        :return:
+        """
+        pass
+
+
 
     def list_ufb_items(self):
         """
