@@ -5,24 +5,31 @@ from square.client import Client as SquareClient
 
 
 """
-    Untapped for Business API documentation
-    https://docs.business.untappd.com/, https://docs.business.untappd.com/#errors
-    API Structure:
-    ->current_user
-    ->container_sizes
-    ->locations
-        ->social_announcements
-        ->historical_items
-        ->hours
-        ->insights
-        ->events
-        ->custom_menus
-            ->custom_sections
-                ->...
-        ->menus
-            ->sections
-                ->items
-                    ->containers
+Untapped for Business API documentation
+https://docs.business.untappd.com/, https://docs.business.untappd.com/#errors
+API Structure:
+->current_user
+->container_sizes
+->locations
+    ->social_announcements
+    ->historical_items
+    ->hours
+    ->insights
+    ->events
+    ->custom_menus
+        ->custom_sections
+            ->...
+    ->menus
+        ->sections
+            ->items
+                ->containers
+
+SquareUp Python Library API 
+mobile_authorization, o_auth, apple_pay, bank_accounts, bookings, cash_drawers, catalog,
+customers, customer_groups, customer_segments, devices, disputes, employees, inventory,
+invoices, labor, locations, checkout, transactions, loyalty, merchants, orders, payments, 
+refunds, subscriptions, team, terminal,
+v1_locations, v1_employees, v1_transactions, v1_items
 """
 
 
@@ -52,13 +59,17 @@ class CTHSync:
         encoded_token = ufb_secure.get("base64_ro")  # Pre-encoded value
         self.ufb_headers = {"Authorization": f"Basic {encoded_token}"}
         self.ufb_api = settings.get("ufb", {}).get("api_root")
+        self.ufb_default_loc_id = settings.get("ufb", {}).get("default_location_id")
 
-    def list_square_inventory_counts(self) -> dict:
+    def get_square_inventory_counts(self) -> dict:
         body = {}
         result = self.square_client.inventory.batch_retrieve_inventory_counts(body)
         return result.body if result.is_success() else f"Error: {result.errors}"
 
-    def list_square_locations(self) -> dict:
+    def get_square_catalog(self) -> dict:
+        pass
+
+    def get_square_locations(self) -> dict:
         """
         Get locations defined for this Square account, 'body' is the list of locations
         :return:
@@ -70,11 +81,19 @@ class CTHSync:
         result = self.square_client.locations.update_location(loc_id, loc_data)
         return result.body if result.is_success() else f"Error: {result.errors}"
 
-    def list_ufb_locations(self):
-        ufb = requests.get(self.ufb_api + "locations", headers=self.ufb_headers)
-        return ufb.json() if ufb.status_code == 200 else ufb.status_code
+    def get_ufb_loc_info(self, info="", loc_id=None):
+        if not loc_id:
+            loc_id = self.ufb_default_loc_id
+        uri = self.ufb_api + f"locations/{loc_id}/{info}"
+        ufb = requests.get(uri, headers=self.ufb_headers)
+        json_value = ufb.json()[f"{info}"] if info in ufb.json() else ufb.json()
+        return json_value if ufb.status_code == 200 else ufb.status_code
 
-    def list_ufb_container_sizes(self):
+    def get_ufb_locations(self):
+        ufb = requests.get(self.ufb_api + "locations", headers=self.ufb_headers)
+        return ufb.json()["locations"] if ufb.status_code == 200 else ufb.status_code
+
+    def get_ufb_container_sizes(self):
         ufb = requests.get(self.ufb_api + "container_sizes", headers=self.ufb_headers)
         return ufb.json() if ufb.status_code == 200 else ufb.status_code
 

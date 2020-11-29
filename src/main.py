@@ -11,31 +11,41 @@ def main():
     https://docs.business.untappd.com/#introduction
 
     SquareUp Python SDK Documentation
-    https://github.com/square/square-python-sdk/tree/master/doc/api
+    https://github.com/square/square-python-sdk/blob/master/doc/client.md
     """
     cth = CTHSync()
 
     print("Square locations:")
-    pprint(cth.list_square_locations())
+    square_locations = cth.get_square_locations()
+    pprint(square_locations)
 
+    print("Square inventory counts:")
+    inventory_counts = cth.get_square_inventory_counts()
+    pprint(inventory_counts)
+
+    print("UFB locations:")
+    location_data = cth.get_ufb_locations()
+    pprint(location_data)
+    pprint(location_data[0]["id"])
+
+    # TODO Update Stripe location data with UFB location information
     locations = settings.get("square", {}).get("locations")
     # print("Updating location settings:")
     # for location in locations:
     #     for location_id, location_data in location.items():
     #         pprint(cth.update_square_location(location_id, location_data))
 
-    print("Square inventory counts:")
-    pprint(cth.list_square_inventory_counts())
+    print("UFB announcements:")
+    announcements = cth.get_ufb_loc_info("social_announcements")
+    pprint(announcements)
 
-    print("UFB locations:")
-    pprint(cth.list_ufb_locations())
+    print("UFB menus:")
+    menus = cth.get_ufb_loc_info("menus")
+    for menu in menus:
+        print(menu)
 
-    print("UFB list_ufb_container_sizes:")
-    sizes = cth.list_ufb_container_sizes()
-    count = 0
-    for size in sizes['container_sizes']:
-        count += 1
-        print(f"{count} - '{size.get('name')}' ")
+    sizes = cth.get_ufb_container_sizes()
+    print(f"Count of UFB container sizes: {len(sizes['container_sizes'])}")
 
 
 if __name__ == "__main__":

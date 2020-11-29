@@ -35,7 +35,7 @@ settings = {
         ]
     },
     "ufb": {
-        "location_id": "15939",
+        "default_location_id": "15939",
         "api_root": "https://business.untappd.com/api/v1/",
     },
 }
