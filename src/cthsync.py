@@ -49,6 +49,9 @@ class CTHSync:
             access_token=secure_settings.get("square", {}).get("access_token"),
             environment="sandbox",
         )
+        self.square_valid_catalog_types = ["ITEM", "ITEM_VARIATION", "CATEGORY",
+                                           "DISCOUNT", "TAX", "MODIFIER", "MODIFIER_LIST",
+                                           "IMAGE"]
 
         # Configure Untappd For Business settings
         ufb_secure = secure_settings.get("ufb", {})
@@ -61,13 +64,23 @@ class CTHSync:
         self.ufb_api = settings.get("ufb", {}).get("api_root")
         self.ufb_default_loc_id = settings.get("ufb", {}).get("default_location_id")
 
+    #
+    # Methods against the Square API
+    #
     def get_square_inventory_counts(self) -> dict:
         body = {}
         result = self.square_client.inventory.batch_retrieve_inventory_counts(body)
         return result.body if result.is_success() else f"Error: {result.errors}"
 
-    def get_square_catalog(self) -> dict:
-        pass
+    def get_square_catalog(self, catalog_type=None) -> dict:
+        """
+        :param catalog_type: see square_valid_catalog_types
+        :return:
+        """
+        if catalog_type and catalog_type not in self.square_valid_catalog_types:
+            return {"error": f"{catalog_type} NOT IN {self.square_valid_catalog_types}"}
+        result = self.square_client.catalog.list_catalog(None, catalog_type)
+        return result.body if result.is_success() else {"error": f"{result.errors}"}
 
     def get_square_locations(self) -> dict:
         """
@@ -75,13 +88,22 @@ class CTHSync:
         :return:
         """
         result = self.square_client.locations.list_locations()
-        return result.body if result.is_success() else result.errors
+        return result.body['locations'] if result.is_success() else result.errors
 
     def update_square_location(self, loc_id: str = None, loc_data: dict = None):
         result = self.square_client.locations.update_location(loc_id, loc_data)
         return result.body if result.is_success() else f"Error: {result.errors}"
 
+    #
+    # Methods against the UFB API
+    #
     def get_ufb_loc_info(self, info="", loc_id=None):
+        """
+        If no parameters provided, returns data on the default location configured
+        :param info: See valid choices in API structure documented above
+        :param loc_id:  Uses the default location ID configured in settings if None
+        :return:
+        """
         if not loc_id:
             loc_id = self.ufb_default_loc_id
         uri = self.ufb_api + f"locations/{loc_id}/{info}"
@@ -100,8 +122,8 @@ class CTHSync:
     def update_ufb_location(self, loc_id: int = None, loc_data: dict = None):
         """
         id	Integer	true	The id of the location.
-        mailing_address1	String	false	The location mailing street address.
-        mailing_address2	String	false	The location mailing address (PO Box, Apt, Ste, etc.)
+        mailing_address1	String	false	The mailing street address.
+        mailing_address2	String	false	The mailing address (PO Box, Apt, Ste, etc.)
         mailing_city	String	false	The location mailing city
         mailing_postcode	String	false	The location mailing postcode
         mailing_region	String	false	The location mailing state/region
@@ -145,8 +167,6 @@ class CTHSync:
         :return:
         """
         pass
-
-
 
     def list_ufb_items(self):
         """
